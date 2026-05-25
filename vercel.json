@@ -3,8 +3,5 @@
   "devCommand": "next dev",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["iad1"],
-  "env": {
-    "N8N_WEBHOOK_URL": "@n8n_webhook_url"
-  }
+  "regions": ["iad1"]
 }
