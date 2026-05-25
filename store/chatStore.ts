@@ -11,7 +11,7 @@ interface ChatStore {
   isLoading: boolean;
   conversationState: ConversationState;
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
-  addLoadingMessage: () => string;
+  addLoadingMessage: (variant?: 'thinking' | 'searching_flights') => string;
   removeMessage: (id: string) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
   setLoading: (loading: boolean) => void;
@@ -33,7 +33,7 @@ export const useChatStore = create<ChatStore>((set) => ({
       ],
     })),
 
-  addLoadingMessage: () => {
+  addLoadingMessage: (variant = 'thinking') => {
     const id = uuidv4();
     set((state) => ({
       messages: [
@@ -44,6 +44,7 @@ export const useChatStore = create<ChatStore>((set) => ({
           content: '',
           timestamp: new Date(),
           isLoading: true,
+          loadingVariant: variant,
         },
       ],
     }));

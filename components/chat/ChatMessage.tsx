@@ -24,7 +24,7 @@ function renderContent(text: string) {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   if (message.isLoading) {
-    return <TypingIndicator />;
+    return <TypingIndicator variant={message.loadingVariant} />;
   }
 
   const isUser = message.role === 'user';

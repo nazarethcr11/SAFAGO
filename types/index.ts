@@ -83,6 +83,7 @@ export interface Message {
   recommendations?: Destination[];
   flights?: Flight[];
   isLoading?: boolean;
+  loadingVariant?: 'thinking' | 'searching_flights';
 }
 
 export interface ChatRequest {

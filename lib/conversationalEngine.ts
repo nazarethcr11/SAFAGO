@@ -12,8 +12,93 @@ import {
   Destination,
   ChatResponse,
 } from '@/types';
-import { getTopDestinations, DestinationEntry } from '@/lib/destinationDB';
+import { getTopDestinations, DestinationEntry, DESTINATION_DB } from '@/lib/destinationDB';
 import { MOCK_FLIGHTS } from '@/utils/constants';
+
+// ── Destination name aliases (for specific-destination detection) ─────────────
+// Maps destination IDs → list of lowercase keywords that identify them.
+const DEST_ALIASES: Record<string, string[]> = {
+  'asia-bali':  ['bali'],
+  'asia-bkk':   ['bangkok', 'tailandia', 'thailand'],
+  'asia-krabi': ['krabi', 'phuket'],
+  'asia-vnm':   ['vietnam', 'hoi an', 'hanoi', 'hanói', 'ha long'],
+  'asia-lka':   ['sri lanka'],
+  'asia-jpn':   ['japon', 'japón', 'japan', 'tokio', 'tokyo', 'kioto', 'kyoto', 'osaka'],
+  'asia-npl':   ['nepal', 'katmandu', 'everest', 'himalaya'],
+  'asia-sgp':   ['singapur', 'singapore'],
+  'asia-mdv':   ['maldivas', 'maldives'],
+  'asia-plw':   ['palawan', 'el nido'],
+  'asia-khm':   ['angkor', 'siem reap', 'camboya'],
+  'eur-cdg':    ['paris', 'parís'],
+  'eur-mad':    ['madrid'],
+  'eur-bcn':    ['barcelona'],
+  'eur-rom':    ['roma', 'rome', 'vaticano'],
+  'eur-snt':    ['santorini'],
+  'eur-lis':    ['lisboa', 'lisbon'],
+  'eur-ams':    ['amsterdam', 'ámsterdam'],
+  'eur-prg':    ['praga', 'prague'],
+  'eur-isl':    ['islandia', 'iceland'],
+  'ski-brc':    ['bariloche'],
+  'ski-scl':    ['valle nevado'],
+  'ski-sma':    ['san martin', 'chapelco'],
+  'ski-yvr':    ['whistler'],
+  'sam-cuz':    ['cusco', 'machu picchu', 'cuzco'],
+  'sam-eze':    ['buenos aires'],
+  'sam-mde':    ['medellin', 'medellín'],
+  'sam-pat':    ['torres del paine'],
+  'sam-gal':    ['galápagos', 'galapagos'],
+  'sam-rio':    ['rio de janeiro', 'río de janeiro'],
+  'car-cun':    ['cancun', 'cancún'],
+  'car-tul':    ['tulum'],
+  'car-ctg':    ['cartagena'],
+  'car-puj':    ['punta cana'],
+  'cam-cri':    ['costa rica'],
+  'afr-mrk':    ['marrakech', 'marrakesh'],
+  'afr-tza':    ['serengeti', 'zanzibar', 'zanzíbar', 'tanzania'],
+};
+
+/** Deep, zone-specific questions to ask when a specific destination is identified. */
+const DESTINATION_DEEP_QUESTIONS: Record<string, string> = {
+  'asia-bali': `¡Bali suena increíble! 🌺 Tiene zonas muy distintas, ¿cuál de estas vibes te llama más?\n\n🌿 **Ubud** — templos, arrozales en terrazas, yoga y retiros\n🏄 **Canggu** — surf, cafés cool y ambiente digital nomad\n🏔️ **Uluwatu** — acantilados espectaculares, templos al borde del mar\n💆 **Seminyak / Nusa Dua** — beach clubs, resorts 5★ y relax total\n\n¿Y en qué mes piensas viajar?`,
+
+  'asia-jpn': `¡Japón es de otro nivel! 🗾 Cada zona es un mundo diferente:\n\n🌸 **Kioto** — templos milenarios, geishas y tradición pura\n⚡ **Tokio** — tecnología, anime, Shibuya y street food infinito\n🍜 **Osaka** — la capital gastronómica de Asia\n⛷️ **Hokkaido** — naturaleza, onsen volcánicos y ski en invierno\n\n¿Qué te atrae más? ¿Y en qué época del año?`,
+
+  'asia-vnm': `¡Vietnam es de los destinos más ricos de Asia! 🏮\n\n🏛️ **Hanói** — capital histórica, callejones coloniales y pho auténtico\n🌊 **Ha Long Bay** — miles de islas de piedra caliza emergiendo del mar\n🏮 **Hoi An** — pueblo de linternas, playas y gastronomía única\n🌆 **Ciudad Ho Chi Minh** — energía pura, historia y street food\n\n¿Cuántos días tendrías? La ruta norte-sur es la clásica`,
+
+  'asia-lka': `¡Sri Lanka es una joya todavía no masificada! 🌿\n\n🐘 **Safari en Udawalawe** — elefantes en libertad a pocos metros\n🚂 **Tren Kandy-Ella** — uno de los viajes en tren más fotogénicos del mundo\n🏖️ **Playas del sur** (Unawatuna, Mirissa) — ideales en diciembre-abril\n🏛️ **Sigiriya** — fortaleza en roca a 200 metros de altura\n\n¿Qué te llama más: safari, playa, cultura... o todo?`,
+
+  'asia-mdv': `¡Las Maldivas son el paraíso absoluto! 🏝️\n\n¿Qué tipo de experiencia imaginas?\n🛖 **Bungalow sobre el agua** — lo más icónico de Maldivas\n🤿 **Buceo y snorkel** — uno de los mejores arrecifes del mundo\n💑 **Luna de miel / aniversario** — sunset cruises, cenas en la playa\n🧘 **Spa y bienestar total** — desconexión absoluta\n\n¿Cuántas noches tienes en mente?`,
+
+  'eur-cdg': `¡París siempre es buena idea! 🗼 ¿Qué tipo de viaje imaginas?\n\n🎨 **Arte y museos** — Louvre, Orsay, Pompidou (reserva con anticipación)\n🍷 **Gastronomía** — bistrós, mercados, pastelerías y vino\n💑 **Romántico** — Montmartre, cenas con vista a la Eiffel, el Sena\n🛍️ **Moda y compras** — Le Marais, Champs-Élysées, Saint-Germain\n📸 **Fotografía** — callejones, la Eiffel al amanecer, Versalles\n\n¿Viajas solo/a o en compañía?`,
+
+  'eur-bcn': `¡Barcelona lo tiene todo! 🏖️ Ciudad, playa y cultura en uno:\n\n🏛️ **Gaudí y arquitectura** — Sagrada Família, Park Güell (icónico)\n🌊 **Playa** — Barceloneta y calas más tranquilas al norte\n🍕 **Gastronomía** — La Boqueria, tapas, pintxos y vino catalán\n🎉 **Nightlife** — una de las mejores vidas nocturnas de Europa\n\n¿Tienes mes aproximado en mente?`,
+
+  'eur-rom': `¡Roma, la Ciudad Eterna! 🏛️ Nunca falla:\n\n🏟️ **Historia antigua** — Coliseo, Foro Romano, Palatino\n⛪ **El Vaticano** — Capilla Sixtina y Basílica de San Pedro\n🍝 **Gastronomía** — pasta, pizza y gelato en su tierra natal\n💧 **Paseos icónicos** — Fontana di Trevi, Piazza Navona\n\n¿Es tu primera vez en Roma? ¿Cuántos días tienes?`,
+
+  'eur-snt': `¡Santorini es de ensueño! 🌅\n\n¿Qué buscas más en Santorini?\n🌸 **Oia al atardecer** — el más fotografiado del mundo\n🏊 **Playas volcánicas** — arena roja, negra y blanca, todas únicas\n🍷 **Vinos volcánicos** — catas con vista a la caldera\n💑 **Romántico** — perfecto para luna de miel o aniversario\n\n¿Viajas en pareja? ¿Y en qué mes?`,
+
+  'eur-lis': `¡Lisboa es encantadora y todavía asequible! 🚋\n\n¿Qué te llama más?\n🚃 **Tranvías históricos** — el mítico 28 por los barrios con colinas\n🎵 **Fado y cultura** — música melancólica en tascas auténticas\n🏖️ **Playas cercanas** — Cascais y Sintra a 40 min en tren\n🍷 **Gastronomía** — pastéis de nata, bacalhau y vino verde\n\n¿Cuántos días tienes?`,
+
+  'ski-brc': `¡Bariloche es increíble! ⛷️ ¿Qué buscas más en el viaje?\n\n🎿 **Ski puro** — Cerro Catedral, 120 km de pistas (julio-agosto)\n🌊 **Lagos y naturaleza** — navegación y trekking patagónico\n🍫 **Gastronomía** — el mejor chocolate y fondue de Argentina\n💑 **Romántico** — cabaña con vista al lago Nahuel Huapi\n\n¿En qué mes piensas ir?`,
+
+  'ski-yvr': `¡Whistler es el ski más épico del continente! 🏔️\n\n¿Qué tipo de experiencia buscas?\n🎿 **Ski y snowboard** — 200+ pistas, el mayor resort de Norteamérica\n🍺 **Après-ski** — bares al pie de pistas con música en vivo\n🏘️ **Whistler Village** — boutiques, restaurantes y ambiente cosmopolita\n🦅 **Aventura en verano** — mountain biking y zip-lining (junio-sept)\n\n¿En qué mes viajas?`,
+
+  'sam-cuz': `¡Cusco y Machu Picchu son una experiencia transformadora! 🏛️\n\n¿Qué es lo más importante para ti?\n🥾 **Camino Inca** (4 días de trek — reserva con meses de anticipación)\n🚆 **Tren turístico** (cómodo, llega a Aguas Calientes en ~3h)\n🏔️ **Valle Sagrado** — Pisac, Ollantaytambo, salinas de Maras\n🌆 **Cusco ciudad** — mercados, gastronomía andina, Qorikancha\n\n¿Cuántos días tienes aproximadamente?`,
+
+  'sam-eze': `¡Buenos Aires es la París de Sudamérica! 🥩\n\n¿Qué te llama más?\n🥩 **Gastronomía** — asado, empanadas y la mejor carne del mundo\n💃 **Tango** — milongas auténticas en San Telmo y La Boca\n🎨 **Arte y cultura** — MALBA, Palermo, galerías y graffiti\n🌃 **Nightlife** — BA no para antes de las 4am\n\n¿En qué mes viajas y cuántos días tienes?`,
+
+  'sam-rio': `¡Río de Janeiro tiene una energía única! 🏖️\n\n¿Qué te imaginas haciendo ahí?\n🏖️ **Ipanema y Copacabana** — las playas más famosas del mundo\n🌿 **Cristo Redentor** — la vista desde el cerro es impresionante\n🎵 **Samba y cultura** — Santa Teresa, La Lapa, carnaval fuera de temporada\n🎉 **Nightlife** — Lapa es legendario por sus bares de samba\n\n¿En qué mes viajas?`,
+
+  'car-cun': `¡Cancún tiene mil caras! 🌊 ¿Qué tipo de experiencia buscas?\n\n🏨 **Todo incluido** — resorts con playa privada y comida ilimitada\n🏛️ **Cultura y arqueología** — Chichén Itzá (2h), Tulum ruins (1h30)\n🤿 **Buceo y cenotes** — el sistema subterráneo más grande del mundo\n🎉 **Vida nocturna** — zona hotelera con clubs de primer nivel\n\n¿Viajas solo/a, en pareja o en grupo?`,
+
+  'car-tul': `¡Tulum tiene un vibe único! 🏺 ¿Qué imaginas haciendo ahí?\n\n🏖️ **Playa y relax** — las playas más bonitas del Caribe mexicano\n💧 **Cenotes** — Dos Ojos, Gran Cenote (experiencias bajo tierra únicas)\n🧘 **Wellness y yoga** — retiros, meditación y ambiente boho-chic\n🏺 **Ruinas mayas** — sobre el mar Caribe (impresionante)\n\n¿Cuántos días tienes y en qué época del año?`,
+
+  'car-ctg': `¡Cartagena es una joya caribeña! 🏰 ¿Qué buscas más?\n\n🏰 **Ciudad amurallada** — calles coloniales declaradas Patrimonio UNESCO\n🏝️ **Islas del Rosario** — snorkel en aguas cristalinas a 45 min en lancha\n🍲 **Gastronomía** — la mejor cocina caribeña de Colombia\n🌃 **Vida nocturna** — barrios Getsemaní y el Centro Histórico\n\n¿En qué mes viajas?`,
+
+  'afr-mrk': `¡Marrakech es otro mundo! 🕌 ¿Qué te llama más?\n\n🌀 **La Médina** — zocos laberínticos, especias y artesanía\n🐪 **El Sahara** — desierto a 6h, noches bajo las estrellas\n🌹 **Riad y descanso** — jardines interiores, hamam y relax total\n🍲 **Gastronomía** — tajines, mint tea y mercados nocturnos\n\n¿Cuántos días tienes? ¿Es para semana completa o escapada?`,
+
+  'afr-tza': `¡Tanzania es la experiencia de vida salvaje más épica del mundo! 🦁\n\n¿Qué combinación te interesa más?\n🦁 **Safari puro** — Serengeti, Ngorongoro, la Gran Migración (junio-oct)\n🏖️ **Safari + Zanzíbar** — la combinación perfecta (bush + beach)\n🏔️ **Kilimanjaro** — el techo de África (requiere preparación)\n📸 **Safari fotográfico** — amanecer en la sabana\n\n¿Cuántos días tienes en mente?`,
+};
 
 // ── Keyword maps ─────────────────────────────────────────────────────────────
 
@@ -160,7 +245,8 @@ interface Detected {
   originIata: string | null;
   departureDate: string | null;
   returnDate: string | null;
-  mentionedDestination: Destination | null;
+  specificDestination: DestinationEntry | null;  // Level-3: exact destination named
+  mentionedDestination: Destination | null;       // Level-2: named from current shortlist
   isConfirmation: boolean;
   isRejection: boolean;
 }
@@ -290,6 +376,21 @@ export function detectFromMessage(message: string, shortlisted: Destination[]): 
     }
   }
 
+  // ── Specific destination detection (Level-3 specificity) ─────────────────
+  // Check whether the user named a specific destination from the DB.
+  let specificDestination: DestinationEntry | null = null;
+  outer: for (const [destId, aliases] of Object.entries(DEST_ALIASES)) {
+    for (const alias of aliases) {
+      const matched = alias.includes(' ')
+        ? lower.includes(alias)                                    // multi-word: substring
+        : new RegExp(`\\b${alias}\\b`, 'i').test(lower);          // single word: boundary
+      if (matched) {
+        specificDestination = DESTINATION_DB.find((d) => d.id === destId) ?? null;
+        if (specificDestination) break outer;
+      }
+    }
+  }
+
   // ── Mentioned destination from shortlist ──────────────────────────────────
   let mentionedDestination: Destination | null = null;
   for (const dest of shortlisted) {
@@ -308,7 +409,8 @@ export function detectFromMessage(message: string, shortlisted: Destination[]): 
   return {
     region, climate, mainActivity, travelStyle, luxuryLevel, interestTags,
     budget, travelers, month, tripDuration, originCity, originIata,
-    departureDate, returnDate, mentionedDestination, isConfirmation, isRejection,
+    departureDate, returnDate, specificDestination, mentionedDestination,
+    isConfirmation, isRejection,
   };
 }
 
@@ -467,6 +569,37 @@ function buildResearchContent(dest: Destination, prefs: ConversationPreferences)
   return `¡Excelente elección! **${dest.name} (${dest.country})** es perfecta para lo que buscas 🎉\n\n**Lo que debes saber:**\n${research}\n\n¿Desde qué ciudad sale tu vuelo y tienes fechas tentativas?`;
 }
 
+// ── Flight response builder (used in multiple stages) ────────────────────────
+
+function buildFlightResponse(
+  dest: Destination,
+  prefs: ConversationPreferences,
+  departureDate: string | null,
+  returnDate: string | null,
+  newState: ConversationState
+): { response: ChatResponse; newState: ConversationState } {
+  const origin = prefs.originCity ?? 'tu ciudad';
+  const dateLabel = departureDate
+    ? `del **${departureDate}**${returnDate ? ` al **${returnDate}**` : ''}`
+    : prefs.month
+      ? `en **${prefs.month}**`
+      : '';
+
+  const flights = MOCK_FLIGHTS.filter((f) =>
+    f.route.startsWith(prefs.originIata ?? 'LIM')
+  );
+
+  return {
+    response: {
+      type: 'flights',
+      content: `✈️ Encontré las mejores opciones de **${origin}** a **${dest.name}** ${dateLabel}:`,
+      flights: flights.length > 0 ? flights : MOCK_FLIGHTS.slice(0, 3),
+      conversationState: newState,
+    },
+    newState,
+  };
+}
+
 // ── Main processing function ──────────────────────────────────────────────────
 
 export function processConversation(
@@ -483,29 +616,14 @@ export function processConversation(
     turnCount: newTurn,
   };
 
-  // ─ FLIGHT SEARCH ────────────────────────────────────────────────────────
+  // ─ FLIGHT SEARCH (re-query in same session) ──────────────────────────────
   if (state.stage === 'flight_search') {
     const dest = state.confirmedDestination!;
-    const origin = newPrefs.originCity ?? 'tu ciudad';
-    const dateLabel = state.departureDate
-      ? `el ${state.departureDate}`
-      : newPrefs.month
-        ? `en ${newPrefs.month.split('-')[1]}/2026`
-        : '';
-
-    const flights = MOCK_FLIGHTS.filter((f) =>
-      f.route.startsWith(newPrefs.originIata ?? 'LIM')
+    return buildFlightResponse(
+      dest, newPrefs,
+      state.departureDate, state.returnDate,
+      newState
     );
-
-    return {
-      response: {
-        type: 'flights',
-        content: `✈️ Buscando vuelos de **${origin}** a **${dest.name}** ${dateLabel}...\n\nAquí están las mejores opciones disponibles:`,
-        flights: flights.length > 0 ? flights : MOCK_FLIGHTS.slice(0, 3),
-        conversationState: newState,
-      },
-      newState,
-    };
   }
 
   // ─ DATE SELECTION ────────────────────────────────────────────────────────
@@ -514,36 +632,27 @@ export function processConversation(
       newState = {
         ...newState,
         departureDate: detected.departureDate ?? state.departureDate,
-        returnDate: detected.returnDate ?? state.returnDate,
-        preferences: newPrefs,
+        returnDate:    detected.returnDate    ?? state.returnDate,
+        preferences:   newPrefs,
       };
 
       if (hasEnoughForFlightSearch(newState)) {
         newState = { ...newState, stage: 'flight_search' };
-        const dest = state.confirmedDestination!;
-        const origin = newPrefs.originCity ?? 'tu ciudad';
-        const dateLabel = newState.departureDate
-          ? `del ${newState.departureDate}${newState.returnDate ? ` al ${newState.returnDate}` : ''}`
-          : `en ${newPrefs.month}`;
-
-        return {
-          response: {
-            type: 'text',
-            content: `¡Perfecto! Buscando vuelos **${origin} → ${dest.name}** ${dateLabel} 🛫\n\nDame un momento...`,
-            conversationState: newState,
-          },
-          newState,
-        };
+        return buildFlightResponse(
+          state.confirmedDestination!, newPrefs,
+          newState.departureDate, newState.returnDate,
+          newState
+        );
       }
 
       const missingOrigin = !newPrefs.originCity;
-      const missingDate = !newState.departureDate && !newPrefs.month;
+      const missingDate   = !newState.departureDate && !newPrefs.month;
 
       if (missingOrigin && missingDate) {
         return {
           response: {
             type: 'text',
-            content: `Para buscar los vuelos necesito:\n\n🛫 **¿Desde qué ciudad sale tu vuelo?**\n📅 **¿En qué fechas? (ej: del 10 al 20 de agosto)**`,
+            content: `Para buscar los vuelos necesito dos cosas:\n\n🛫 **¿Desde qué ciudad sale tu vuelo?**\n📅 **¿En qué fechas? (ej: del 10 al 20 de agosto)**`,
             conversationState: newState,
           },
           newState,
@@ -553,7 +662,7 @@ export function processConversation(
         return {
           response: {
             type: 'text',
-            content: `¡Casi listo! Solo falta: **¿desde qué ciudad sale tu vuelo?** 🛫`,
+            content: `¡Casi listo! Solo me falta saber: **¿desde qué ciudad sale tu vuelo?** 🛫`,
             conversationState: newState,
           },
           newState,
@@ -589,24 +698,17 @@ export function processConversation(
       newState = {
         ...newState,
         departureDate: detected.departureDate ?? state.departureDate,
-        returnDate: detected.returnDate ?? state.returnDate,
+        returnDate:    detected.returnDate    ?? state.returnDate,
+        preferences:   newPrefs,
       };
 
-      if (hasEnoughForFlightSearch({ ...newState, preferences: newPrefs })) {
-        newState = { ...newState, stage: 'flight_search', preferences: newPrefs };
-        const origin = newPrefs.originCity!;
-        const dateLabel = newState.departureDate
-          ? `del ${newState.departureDate}${newState.returnDate ? ` al ${newState.returnDate}` : ''}`
-          : `en ${newPrefs.month}`;
-
-        return {
-          response: {
-            type: 'text',
-            content: `¡Perfecto! Buscando vuelos **${origin} → ${confirmedDest.name}** ${dateLabel} 🛫`,
-            conversationState: newState,
-          },
-          newState,
-        };
+      if (hasEnoughForFlightSearch(newState)) {
+        newState = { ...newState, stage: 'flight_search' };
+        return buildFlightResponse(
+          confirmedDest, newPrefs,
+          newState.departureDate, newState.returnDate,
+          newState
+        );
       }
 
       newState = { ...newState, stage: 'date_selection' };
@@ -626,9 +728,28 @@ export function processConversation(
 
   // ─ REFINEMENT ────────────────────────────────────────────────────────────
   if (state.stage === 'refinement') {
-    let targetDest: Destination | null = detected.mentionedDestination;
+    // Specific destination named → deep-dive question
+    if (detected.specificDestination && !state.confirmedDestination) {
+      const dest = detected.specificDestination;
+      newState = {
+        ...newState,
+        stage: 'destination_selection',
+        confirmedDestination: dest,
+        shortlistedDestinations: [dest],
+      };
+      const deepQ = DESTINATION_DEEP_QUESTIONS[dest.id];
+      return {
+        response: {
+          type: 'text',
+          content: deepQ ?? buildResearchContent(dest, newPrefs),
+          conversationState: newState,
+        },
+        newState,
+      };
+    }
 
-    if (!targetDest && (detected.isConfirmation) && state.shortlistedDestinations.length > 0) {
+    let targetDest: Destination | null = detected.mentionedDestination;
+    if (!targetDest && detected.isConfirmation && state.shortlistedDestinations.length > 0) {
       targetDest = state.shortlistedDestinations[0];
     }
 
@@ -639,11 +760,11 @@ export function processConversation(
         confirmedDestination: targetDest,
         shortlistedDestinations: [targetDest],
       };
-
+      const deepQ = DESTINATION_DEEP_QUESTIONS[targetDest.id];
       return {
         response: {
           type: 'text',
-          content: buildResearchContent(targetDest, newPrefs),
+          content: deepQ ?? buildResearchContent(targetDest, newPrefs),
           conversationState: newState,
         },
         newState,
@@ -651,13 +772,12 @@ export function processConversation(
     }
 
     if (detected.isRejection || detected.region || detected.climate || detected.mainActivity) {
-      // Recompute with updated prefs
       const fresh = getTopDestinations(newPrefs, 4) as Destination[];
       newState = { ...newState, shortlistedDestinations: fresh };
       return {
         response: {
           type: 'destinations',
-          content: `Actualicé las recomendaciones con tus nuevas preferencias 🎯 ¿Cuál te llama más la atención?`,
+          content: `Actualicé las recomendaciones con tus preferencias 🎯 ¿Cuál te llama más la atención?`,
           recommendations: fresh,
           conversationState: newState,
         },
@@ -665,7 +785,6 @@ export function processConversation(
       };
     }
 
-    // User just chatting — show existing shortlist again
     return {
       response: {
         type: 'destinations',
@@ -679,7 +798,33 @@ export function processConversation(
 
   // ─ DISCOVERY (default) ────────────────────────────────────────────────────
 
-  // User mentioned a destination directly from shortlist
+  // ── Level-3 specificity: user named a concrete destination ────────────────
+  // Skip ALL region/climate discovery — go straight to deep destination questions.
+  if (detected.specificDestination && !state.confirmedDestination) {
+    const dest = detected.specificDestination;
+    newState = {
+      ...newState,
+      stage: 'destination_selection',
+      confirmedDestination: dest,
+      shortlistedDestinations: [dest],
+      // Auto-set region and region-implied climate from the destination
+      preferences: {
+        ...newPrefs,
+        region: newPrefs.region ?? dest.region,
+      },
+    };
+    const deepQ = DESTINATION_DEEP_QUESTIONS[dest.id];
+    return {
+      response: {
+        type: 'text',
+        content: deepQ ?? buildResearchContent(dest, newPrefs),
+        conversationState: newState,
+      },
+      newState,
+    };
+  }
+
+  // ── Level-2 / Level-1: shortlist mention or generic discovery ────────────
   if (detected.mentionedDestination) {
     const dest = detected.mentionedDestination;
     newState = {
@@ -688,10 +833,11 @@ export function processConversation(
       confirmedDestination: dest,
       shortlistedDestinations: [dest],
     };
+    const deepQ = DESTINATION_DEEP_QUESTIONS[dest.id];
     return {
       response: {
         type: 'text',
-        content: buildResearchContent(dest, newPrefs),
+        content: deepQ ?? buildResearchContent(dest, newPrefs),
         conversationState: newState,
       },
       newState,
@@ -715,7 +861,7 @@ export function processConversation(
     };
   }
 
-  // Still discovering — ask next targeted question
+  // Still discovering — ask the next targeted question
   const content = buildDiscoveryQuestion(newPrefs, newTurn - 1);
   return {
     response: {

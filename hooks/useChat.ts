@@ -4,6 +4,27 @@ import { useCallback } from 'react';
 import { useChatStore } from '@/store/chatStore';
 import { sendMessage } from '@/services/chatService';
 
+/** Heuristic: will this message likely trigger a flight search? */
+function willTriggerFlightSearch(
+  content: string,
+  stage: string,
+  hasConfirmedDest: boolean
+): boolean {
+  if (!hasConfirmedDest) return false;
+  if (stage !== 'date_selection' && stage !== 'destination_selection') return false;
+
+  const lower = content.toLowerCase();
+  const hasDate =
+    /\d{1,2}\s+(de\s+)?\w+|\bde\b.*\bal\b|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre/i.test(
+      lower
+    );
+  const hasOrigin =
+    /lima|bogot|santiago|buenos aires|quito|medellin|medell[ií]n|caracas|miami|madrid|barcelona/i.test(
+      lower
+    );
+  return hasDate || hasOrigin;
+}
+
 export function useChat() {
   const {
     messages,
@@ -23,7 +44,14 @@ export function useChat() {
       if (!content.trim() || isLoading) return;
 
       addMessage({ role: 'user', content });
-      const loadingId = addLoadingMessage();
+
+      // Detect whether this will trigger a flight search → use special loading animation
+      const isFlightSearch = willTriggerFlightSearch(
+        content,
+        conversationState.stage,
+        conversationState.confirmedDestination !== null
+      );
+      const loadingId = addLoadingMessage(isFlightSearch ? 'searching_flights' : 'thinking');
       setLoading(true);
 
       try {
@@ -55,7 +83,16 @@ export function useChat() {
         setLoading(false);
       }
     },
-    [isLoading, sessionId, conversationState, addMessage, addLoadingMessage, updateMessage, setLoading, setConversationState]
+    [
+      isLoading,
+      sessionId,
+      conversationState,
+      addMessage,
+      addLoadingMessage,
+      updateMessage,
+      setLoading,
+      setConversationState,
+    ]
   );
 
   return { messages, isLoading, conversationState, sendUserMessage, clearChat };
