@@ -39,6 +39,7 @@ export interface ConversationState {
 
 export interface Destination {
   id: string;
+  iata?: string;
   name: string;
   country: string;
   climate: string;

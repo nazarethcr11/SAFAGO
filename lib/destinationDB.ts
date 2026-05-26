@@ -51,6 +51,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   // ── ASIA ──────────────────────────────────────────────────────────────────
   {
     id: 'asia-bali',
+    iata: 'DPS',
     name: 'Bali',
     country: 'Indonesia',
     climate: 'Tropical',
@@ -71,6 +72,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-bkk',
+    iata: 'BKK',
     name: 'Bangkok',
     country: 'Tailandia',
     climate: 'Tropical húmedo',
@@ -91,6 +93,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-krabi',
+    iata: 'KBV',
     name: 'Krabi',
     country: 'Tailandia',
     climate: 'Tropical',
@@ -111,6 +114,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-vnm',
+    iata: 'HAN',
     name: 'Vietnam (Hoi An & Hanói)',
     country: 'Vietnam',
     climate: 'Subtropical húmedo',
@@ -131,6 +135,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-lka',
+    iata: 'CMB',
     name: 'Sri Lanka',
     country: 'Sri Lanka',
     climate: 'Tropical',
@@ -151,6 +156,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-jpn',
+    iata: 'NRT',
     name: 'Japón (Tokio & Kioto)',
     country: 'Japón',
     climate: 'Templado',
@@ -171,6 +177,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-npl',
+    iata: 'KTM',
     name: 'Nepal (Katmandú & Himalaya)',
     country: 'Nepal',
     climate: 'Alpino de altitud',
@@ -191,6 +198,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-sgp',
+    iata: 'SIN',
     name: 'Singapur',
     country: 'Singapur',
     climate: 'Tropical ecuatorial',
@@ -211,6 +219,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-mdv',
+    iata: 'MLE',
     name: 'Maldivas',
     country: 'Maldivas',
     climate: 'Tropical oceánico',
@@ -231,6 +240,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-plw',
+    iata: 'PPS',
     name: 'Palawan (El Nido)',
     country: 'Filipinas',
     climate: 'Tropical',
@@ -251,6 +261,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'asia-khm',
+    iata: 'REP',
     name: 'Angkor Wat (Siem Reap)',
     country: 'Camboya',
     climate: 'Tropical monzónico',
@@ -273,6 +284,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   // ── EUROPE ────────────────────────────────────────────────────────────────
   {
     id: 'eur-cdg',
+    iata: 'CDG',
     name: 'París',
     country: 'Francia',
     climate: 'Oceánico templado',
@@ -293,6 +305,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-mad',
+    iata: 'MAD',
     name: 'Madrid',
     country: 'España',
     climate: 'Continental mediterráneo',
@@ -313,6 +326,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-bcn',
+    iata: 'BCN',
     name: 'Barcelona',
     country: 'España',
     climate: 'Mediterráneo',
@@ -333,6 +347,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-rom',
+    iata: 'FCO',
     name: 'Roma',
     country: 'Italia',
     climate: 'Mediterráneo',
@@ -353,6 +368,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-snt',
+    iata: 'JTR',
     name: 'Santorini',
     country: 'Grecia',
     climate: 'Mediterráneo seco',
@@ -373,6 +389,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-lis',
+    iata: 'LIS',
     name: 'Lisboa',
     country: 'Portugal',
     climate: 'Mediterráneo atlántico',
@@ -393,6 +410,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-ams',
+    iata: 'AMS',
     name: 'Ámsterdam',
     country: 'Países Bajos',
     climate: 'Templado oceánico',
@@ -413,6 +431,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-prg',
+    iata: 'PRG',
     name: 'Praga',
     country: 'República Checa',
     climate: 'Templado continental',
@@ -433,6 +452,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'eur-isl',
+    iata: 'KEF',
     name: 'Islandia',
     country: 'Islandia',
     climate: 'Subártico',
@@ -455,6 +475,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   // ── SOUTH AMERICA ────────────────────────────────────────────────────────
   {
     id: 'ski-brc',
+    iata: 'BRC',
     name: 'Bariloche',
     country: 'Argentina',
     climate: 'Frío andino',
@@ -475,6 +496,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'ski-scl',
+    iata: 'SCL',
     name: 'Valle Nevado',
     country: 'Chile',
     climate: 'Alpino seco',
@@ -495,6 +517,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'ski-sma',
+    iata: 'CPC',
     name: 'San Martín de los Andes',
     country: 'Argentina',
     climate: 'Frío andino patagónico',
@@ -515,6 +538,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'sam-cuz',
+    iata: 'CUZ',
     name: 'Cusco & Machu Picchu',
     country: 'Perú',
     climate: 'Templado de altitud',
@@ -535,6 +559,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'sam-eze',
+    iata: 'EZE',
     name: 'Buenos Aires',
     country: 'Argentina',
     climate: 'Templado húmedo',
@@ -555,6 +580,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'sam-mde',
+    iata: 'MDE',
     name: 'Medellín',
     country: 'Colombia',
     climate: 'Primaveral (eterna)',
@@ -575,6 +601,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'sam-pat',
+    iata: 'PUQ',
     name: 'Torres del Paine',
     country: 'Chile',
     climate: 'Subpolar oceánico',
@@ -595,6 +622,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'sam-gal',
+    iata: 'GPS',
     name: 'Galápagos',
     country: 'Ecuador',
     climate: 'Subtropical oceánico',
@@ -615,6 +643,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'sam-rio',
+    iata: 'GIG',
     name: 'Río de Janeiro',
     country: 'Brasil',
     climate: 'Tropical',
@@ -637,6 +666,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   // ── CARIBBEAN / CENTRAL AMERICA ───────────────────────────────────────────
   {
     id: 'car-cun',
+    iata: 'CUN',
     name: 'Cancún',
     country: 'México',
     climate: 'Tropical',
@@ -657,6 +687,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'car-tul',
+    iata: 'CUN',
     name: 'Tulum',
     country: 'México',
     climate: 'Tropical húmedo',
@@ -677,6 +708,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'car-ctg',
+    iata: 'CTG',
     name: 'Cartagena',
     country: 'Colombia',
     climate: 'Tropical caribeño',
@@ -697,6 +729,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'car-puj',
+    iata: 'PUJ',
     name: 'Punta Cana',
     country: 'Rep. Dominicana',
     climate: 'Tropical',
@@ -717,6 +750,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'cam-cri',
+    iata: 'SJO',
     name: 'Costa Rica',
     country: 'Costa Rica',
     climate: 'Tropical húmedo',
@@ -739,6 +773,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   // ── NORTH AMERICA ─────────────────────────────────────────────────────────
   {
     id: 'ski-yvr',
+    iata: 'YVR',
     name: 'Whistler',
     country: 'Canadá',
     climate: 'Subalpino húmedo',
@@ -761,6 +796,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   // ── AFRICA ────────────────────────────────────────────────────────────────
   {
     id: 'afr-mrk',
+    iata: 'RAK',
     name: 'Marrakech',
     country: 'Marruecos',
     climate: 'Desértico semiárido',
@@ -781,6 +817,7 @@ export const DESTINATION_DB: DestinationEntry[] = [
   },
   {
     id: 'afr-tza',
+    iata: 'JRO',
     name: 'Tanzania (Serengeti + Zanzíbar)',
     country: 'Tanzania',
     climate: 'Tropical de sabana',
