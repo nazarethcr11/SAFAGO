@@ -71,8 +71,11 @@ export function useChat() {
 
         if (response.conversationState) {
           setConversationState(response.conversationState);
+        } else {
+          console.warn('[SAFAGO] Respuesta sin conversationState — el estado de conversación no se actualizó.');
         }
-      } catch {
+      } catch (err) {
+        console.error('[SAFAGO] Error en sendUserMessage:', err);
         updateMessage(loadingId, {
           content:
             'Lo siento, ocurrió un error al conectar con el servidor. Por favor intenta de nuevo.',

@@ -1,7 +1,8 @@
-import { Plane, Clock, ArrowRight } from 'lucide-react';
+import { Plane, Clock, ExternalLink } from 'lucide-react';
 import { Flight } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { formatPrice, formatDuration, formatFlightTime } from '@/utils/formatters';
+import { buildBookingUrl } from '@/lib/bookingUrls';
 
 interface FlightCardProps {
   flight: Flight;
@@ -86,6 +87,17 @@ export function FlightCard({ flight }: FlightCardProps) {
           </Badge>
         )}
       </div>
+
+      {/* Booking CTA */}
+      <a
+        href={buildBookingUrl(flight)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-brand-600 hover:bg-brand-500 active:bg-brand-700 text-white text-xs font-semibold transition-colors duration-200"
+      >
+        Reservar vuelo
+        <ExternalLink className="w-3 h-3" strokeWidth={2.5} />
+      </a>
     </div>
   );
 }

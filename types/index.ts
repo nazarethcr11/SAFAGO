@@ -66,6 +66,7 @@ export interface Flight {
   currency: string;
   cabinClass?: string;
   searchDate?: string;
+  returnDate?: string;
   previousFare?: number;
   fareChanged?: boolean;
   fareDifference?: number;

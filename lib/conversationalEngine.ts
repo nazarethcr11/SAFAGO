@@ -11,6 +11,7 @@ import {
   ConversationPreferences,
   Destination,
   ChatResponse,
+  Flight,
 } from '@/types';
 import { getTopDestinations, DestinationEntry, DESTINATION_DB } from '@/lib/destinationDB';
 import { MOCK_FLIGHTS } from '@/utils/constants';
@@ -571,6 +572,33 @@ function buildResearchContent(dest: Destination, prefs: ConversationPreferences)
 
 // ── Flight response builder (used in multiple stages) ────────────────────────
 
+// Keeps the original time-of-day but shifts the calendar date to match what
+// the user actually requested, avoiding hallucinated dates in mock mode.
+function applyUserDates(
+  flight: Flight,
+  departureDate: string | null,
+  returnDate: string | null
+): Flight {
+  if (!departureDate) return { ...flight, returnDate: returnDate ?? undefined };
+
+  const originalDep = new Date(flight.departureTime);
+  const originalArr = new Date(flight.arrivalTime);
+  const durationMs = originalArr.getTime() - originalDep.getTime();
+
+  const hh = originalDep.getHours().toString().padStart(2, '0');
+  const min = originalDep.getMinutes().toString().padStart(2, '0');
+  const newDep = new Date(`${departureDate}T${hh}:${min}:00`);
+  const newArr = new Date(newDep.getTime() + durationMs);
+
+  return {
+    ...flight,
+    departureTime: newDep.toISOString(),
+    arrivalTime: newArr.toISOString(),
+    searchDate: departureDate,
+    returnDate: returnDate ?? undefined,
+  };
+}
+
 function buildFlightResponse(
   dest: Destination,
   prefs: ConversationPreferences,
@@ -585,15 +613,28 @@ function buildFlightResponse(
       ? `en **${prefs.month}**`
       : '';
 
-  const flights = MOCK_FLIGHTS.filter((f) =>
+  const filtered = MOCK_FLIGHTS.filter((f) =>
     f.route.startsWith(prefs.originIata ?? 'LIM')
   );
+
+  if (filtered.length === 0) {
+    return {
+      response: {
+        type: 'text',
+        content: `No encontré vuelos de demostración desde **${origin}**. En producción la búsqueda usará datos reales. Prueba indicando **Lima** como ciudad de origen para ver vuelos de ejemplo. 🛫`,
+        conversationState: newState,
+      },
+      newState,
+    };
+  }
+
+  const flights = filtered.map((f) => applyUserDates(f, departureDate, returnDate));
 
   return {
     response: {
       type: 'flights',
       content: `✈️ Encontré las mejores opciones de **${origin}** a **${dest.name}** ${dateLabel}:`,
-      flights: flights.length > 0 ? flights : MOCK_FLIGHTS.slice(0, 3),
+      flights,
       conversationState: newState,
     },
     newState,
@@ -618,9 +659,14 @@ export function processConversation(
 
   // ─ FLIGHT SEARCH (re-query in same session) ──────────────────────────────
   if (state.stage === 'flight_search') {
-    const dest = state.confirmedDestination!;
+    if (!state.confirmedDestination) {
+      return {
+        response: { type: 'error', content: 'Destino no confirmado. Por favor inicia una nueva búsqueda.', conversationState: newState },
+        newState,
+      };
+    }
     return buildFlightResponse(
-      dest, newPrefs,
+      state.confirmedDestination, newPrefs,
       state.departureDate, state.returnDate,
       newState
     );
@@ -636,10 +682,10 @@ export function processConversation(
         preferences:   newPrefs,
       };
 
-      if (hasEnoughForFlightSearch(newState)) {
+      if (hasEnoughForFlightSearch(newState) && state.confirmedDestination) {
         newState = { ...newState, stage: 'flight_search' };
         return buildFlightResponse(
-          state.confirmedDestination!, newPrefs,
+          state.confirmedDestination, newPrefs,
           newState.departureDate, newState.returnDate,
           newState
         );
@@ -692,7 +738,7 @@ export function processConversation(
 
   // ─ DESTINATION SELECTION ────────────────────────────────────────────────
   if (state.stage === 'destination_selection') {
-    const confirmedDest = state.confirmedDestination!;
+    const confirmedDest = state.confirmedDestination;
 
     if (detected.originCity || detected.departureDate) {
       newState = {
@@ -702,7 +748,7 @@ export function processConversation(
         preferences:   newPrefs,
       };
 
-      if (hasEnoughForFlightSearch(newState)) {
+      if (hasEnoughForFlightSearch(newState) && confirmedDest) {
         newState = { ...newState, stage: 'flight_search' };
         return buildFlightResponse(
           confirmedDest, newPrefs,
@@ -719,7 +765,9 @@ export function processConversation(
     return {
       response: {
         type: 'text',
-        content: buildResearchContent(confirmedDest, newPrefs),
+        content: confirmedDest
+          ? buildResearchContent(confirmedDest, newPrefs)
+          : 'Cuéntame más sobre tus fechas y ciudad de origen para buscar los vuelos. 🗓️',
         conversationState: newState,
       },
       newState,

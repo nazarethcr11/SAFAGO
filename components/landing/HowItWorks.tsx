@@ -30,7 +30,7 @@ const steps = [
     step: '04',
     title: 'Elige y viaja',
     description:
-      'Compara precios, horarios y escalas. SAFAGO rastrea cambios de precio y te alerta cuando hay mejores ofertas.',
+      'Compara precios, horarios y escalas. Cada resultado muestra la tendencia de tarifa para que sepas si conviene comprar ahora o esperar.',
   },
 ];
 
