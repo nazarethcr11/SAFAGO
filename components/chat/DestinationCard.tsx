@@ -1,8 +1,9 @@
 import Image from 'next/image';
-import { MapPin, Thermometer, Star } from 'lucide-react';
+import { MapPin, Thermometer, Star, ExternalLink } from 'lucide-react';
 import { Destination } from '@/types';
 import { Badge } from '@/components/ui/Badge';
 import { formatPrice } from '@/utils/formatters';
+import { buildTripAdvisorUrl } from '@/lib/tripAdvisorUrls';
 
 interface DestinationCardProps {
   destination: Destination;
@@ -51,13 +52,23 @@ export function DestinationCard({ destination }: DestinationCardProps) {
           {destination.description}
         </p>
 
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 mb-3">
           {destination.tags.slice(0, 3).map((tag) => (
             <Badge key={tag} variant="blue">
               {tag}
             </Badge>
           ))}
         </div>
+
+        <a
+          href={buildTripAdvisorUrl(destination)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-1.5 w-full py-2 rounded-xl bg-surface-700 hover:bg-surface-600 active:bg-surface-800 text-surface-200 text-xs font-semibold transition-colors duration-200"
+        >
+          Ver reseñas
+          <ExternalLink className="w-3 h-3" strokeWidth={2.5} />
+        </a>
       </div>
     </div>
   );

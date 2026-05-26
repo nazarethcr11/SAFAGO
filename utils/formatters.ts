@@ -7,6 +7,7 @@ export function formatPrice(price: number, currency = 'USD'): string {
 }
 
 export function formatDuration(minutes: number): string {
+  if (minutes == null || isNaN(minutes) || minutes < 0) return '—';
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   if (h === 0) return `${m}m`;

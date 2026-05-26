@@ -6,27 +6,27 @@ import { Clock, Brain, TrendingDown, Shield } from 'lucide-react';
 const benefits = [
   {
     icon: Clock,
-    title: 'Ahorra horas de búsqueda',
+    title: 'De conversación a recomendación en minutos',
     description:
-      'En lugar de comparar decenas de webs, SAFAGO agrega y filtra la información más relevante en segundos.',
-    metric: '4h',
-    metricLabel: 'promedio ahorrado por búsqueda',
+      'En lugar de comparar decenas de webs, SAFAGO agrega y filtra la información más relevante en una sola conversación.',
+    metric: '< 5 min',
+    metricLabel: 'para recibir tus primeras recomendaciones personalizadas',
   },
   {
     icon: Brain,
-    title: 'Recomendaciones inteligentes',
+    title: 'Recomendaciones adaptadas a ti',
     description:
-      'La IA aprende de tus preferencias para recomendarte destinos que realmente se adaptan a ti, no a las tendencias.',
-    metric: '94%',
-    metricLabel: 'de satisfacción en recomendaciones',
+      'La IA adapta sus sugerencias a lo largo de la conversación según tu estilo de viaje, presupuesto y actividades preferidas.',
+    metric: '50+',
+    metricLabel: 'destinos evaluados con datos de clima, temporada y actividades',
   },
   {
     icon: TrendingDown,
-    title: 'Encuentra los mejores precios',
+    title: 'Compra en el momento correcto',
     description:
-      'Consultamos Google Flights en tiempo real y rastreamos cambios de precio para alertarte en el momento justo.',
-    metric: '30%',
-    metricLabel: 'de ahorro promedio detectado',
+      'Según Google Flights, reservar con 6 a 8 semanas de anticipación suele ofrecer los mejores precios. SAFAGO muestra tendencias de tarifa para ayudarte a decidir.',
+    metric: '6–8 sem.',
+    metricLabel: 'ventana ideal de compra según datos de Google Flights',
   },
   {
     icon: Shield,

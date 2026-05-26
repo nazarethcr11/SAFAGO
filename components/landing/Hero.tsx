@@ -66,8 +66,8 @@ export function Hero() {
           custom={0.2}
           className="text-lg sm:text-xl text-surface-400 max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          El 92% de viajeros elige por precio, no por experiencia. SAFAGO analiza tus preferencias
-          y encuentra el destino perfecto para ti, con vuelos reales al mejor precio.
+          Los viajeros consultan hasta 38 sitios web antes de reservar un viaje. SAFAGO analiza
+          tus preferencias en una sola conversación y te conecta con vuelos reales al mejor precio.
         </motion.p>
 
         {/* CTAs */}
