@@ -51,6 +51,29 @@ export interface Destination {
   rating?: number;
 }
 
+export interface FlightSegment {
+  flightNumber: string;
+  airline: string;
+  airlineLogo?: string;
+  departureAirport: string;      // IATA code e.g. "LIM"
+  departureAirportName: string;  // full name
+  departureTime: string;         // "YYYY-MM-DD HH:mm"
+  arrivalAirport: string;
+  arrivalAirportName: string;
+  arrivalTime: string;
+  durationMinutes: number;
+  airplane?: string;
+  cabinClass?: string;
+  overnight?: boolean;
+}
+
+export interface FlightLayover {
+  airport: string;       // IATA code
+  airportName: string;
+  durationMinutes: number;
+  overnight?: boolean;
+}
+
 export interface Flight {
   flightNumber: string;
   airline: string;
@@ -68,6 +91,11 @@ export interface Flight {
   cabinClass?: string;
   searchDate?: string;
   returnDate?: string;
+  // Verified booking URL from SerpAPI (price guaranteed to match Google Flights)
+  bookingUrl?: string;
+  // Per-segment detail for connections
+  segments?: FlightSegment[];
+  layovers?: FlightLayover[];
   previousFare?: number;
   fareChanged?: boolean;
   fareDifference?: number;
