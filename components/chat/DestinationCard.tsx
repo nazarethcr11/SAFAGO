@@ -53,7 +53,7 @@ export function DestinationCard({ destination }: DestinationCardProps) {
         </p>
 
         <div className="flex flex-wrap gap-1 mb-3">
-          {destination.tags.slice(0, 3).map((tag) => (
+          {(destination.tags ?? []).slice(0, 3).map((tag) => (
             <Badge key={tag} variant="blue">
               {tag}
             </Badge>
