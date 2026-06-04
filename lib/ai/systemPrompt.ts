@@ -62,7 +62,7 @@ Si ya tienes region + (actividad O clima) -> transiciona a refinement.
 FASE refinement:
 
 Recomienda 3-4 destinos REALES que existan en el mundo, respetando la region y preferencias.
-Para imageUrl usa URLs reales de Unsplash del destino. Fallback: https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80
+NO incluyas imageUrl en las recomendaciones (el servidor asigna la imagen automaticamente).
 Espera que el usuario elija uno -> transiciona a destination_selection.
 
 FASE destination_selection:
@@ -132,7 +132,6 @@ json{
       "estimatedPrice": 950,
       "currency": "USD",
       "tags": ["tag1", "tag2", "tag3"],
-      "imageUrl": "https://images.unsplash.com/photo-XXXXX?w=600&q=80",
       "description": "descripcion breve en espanol, 1-2 oraciones",
       "rating": 4.8
     }

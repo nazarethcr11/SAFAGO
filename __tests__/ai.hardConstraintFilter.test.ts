@@ -4,7 +4,10 @@ import { createInitialState } from '@/lib/conversationalEngine';
 import type { ParsedAiResult } from '@/lib/ai/parseAiResponse';
 import type { Destination } from '@/types';
 
+// Universal fallback: returned for destinations not in DB and without a known region
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80';
+// Bali's curated DB photo (used to verify DB lookup resolves correctly)
+const BALI_DB_IMAGE = 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80';
 
 function makeResult(
   recs: Partial<Destination & { region?: string }>[],
@@ -99,8 +102,16 @@ describe('applyHardConstraintFilter — normalización de campos', () => {
     expect(typeof result.recommendations[0].id).toBe('string');
   });
 
-  it('añade imageUrl de fallback cuando no hay imageUrl', () => {
+  it('resuelve imageUrl desde el DB para un destino conocido (Bali)', () => {
+    // Bali is in DESTINATION_DB → always gets its curated DB photo, never a hallucinated one
     const recs = [{ id: 'x', name: 'Bali', country: 'Indonesia', region: 'asia' }];
+    const result = applyHardConstraintFilter(makeResult(recs, null));
+    expect(result.recommendations[0].imageUrl).toBe(BALI_DB_IMAGE);
+  });
+
+  it('usa el fallback universal para destinos desconocidos sin región', () => {
+    // Dubrovnik is not in DESTINATION_DB and has no region → universal fallback
+    const recs = [{ id: 'x', name: 'Dubrovnik', country: 'Croacia' }];
     const result = applyHardConstraintFilter(makeResult(recs, null));
     expect(result.recommendations[0].imageUrl).toBe(FALLBACK_IMAGE);
   });
@@ -123,13 +134,15 @@ describe('applyHardConstraintFilter — normalización de campos', () => {
     expect(result.recommendations[0].tags).toEqual([]);
   });
 
-  it('conserva imageUrl existente cuando ya está presente', () => {
+  it('reemplaza imageUrl del AI con la imagen del DB (previene alucinaciones)', () => {
+    // Even if AI provides a (potentially hallucinated) imageUrl, the filter
+    // always overrides it with the curated DB photo for known destinations.
     const recs = [{
       id: 'x', name: 'Bali', country: 'Indonesia', region: 'asia',
-      imageUrl: 'https://custom.image.jpg',
+      imageUrl: 'https://images.unsplash.com/photo-HALLUCINATED?w=600&q=80',
     }];
     const result = applyHardConstraintFilter(makeResult(recs, null));
-    expect(result.recommendations[0].imageUrl).toBe('https://custom.image.jpg');
+    expect(result.recommendations[0].imageUrl).toBe(BALI_DB_IMAGE);
   });
 });
 

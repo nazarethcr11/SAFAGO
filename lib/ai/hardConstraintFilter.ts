@@ -1,8 +1,6 @@
 import { Destination } from '@/types';
 import { ParsedAiResult } from './parseAiResponse';
-
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80';
+import { resolveImageUrl } from './imageResolver';
 
 // ── Country → region mapping ──────────────────────────────────────────────────
 // Mirrors COUNTRY_REGION in "Hard Constraint Filter" (v3).
@@ -112,7 +110,7 @@ export function applyHardConstraintFilter(data: ParsedAiResult): ParsedAiResult 
     currency: r.currency || 'USD',
     rating: r.rating ?? 4.5,
     tags: r.tags ?? [],
-    imageUrl: r.imageUrl || FALLBACK_IMAGE,
+    imageUrl: resolveImageUrl(r),
     estimatedPrice: r.estimatedPrice || 800,
     description: r.description || '',
   }));
@@ -128,10 +126,20 @@ export function applyHardConstraintFilter(data: ParsedAiResult): ParsedAiResult 
     else if (valid.length === 0) recs = [];
   }
 
+  // Fix imageUrl of confirmedDestination too (AI may have omitted or hallucinated it)
+  const confirmedDest = data.conversationState.confirmedDestination;
+  const fixedConfirmed = confirmedDest
+    ? { ...confirmedDest, imageUrl: resolveImageUrl(confirmedDest) }
+    : null;
+
   return {
     ...data,
     // If we ended up with destination recs, force type = 'destinations'
     type: recs.length > 0 ? 'destinations' : data.type,
     recommendations: recs,
+    conversationState: {
+      ...data.conversationState,
+      confirmedDestination: fixedConfirmed,
+    },
   };
 }

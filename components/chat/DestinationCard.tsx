@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useState } from 'react';
 import { MapPin, Thermometer, Star, ExternalLink } from 'lucide-react';
 import { Destination } from '@/types';
 import { Badge } from '@/components/ui/Badge';
@@ -9,16 +12,22 @@ interface DestinationCardProps {
   destination: Destination;
 }
 
+const FALLBACK_IMAGE =
+  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80';
+
 export function DestinationCard({ destination }: DestinationCardProps) {
+  const [imgSrc, setImgSrc] = useState(destination.imageUrl);
+
   return (
     <div className="group glass rounded-2xl overflow-hidden border border-surface-700/50 hover:border-brand-700/60 transition-all duration-300 hover:shadow-glow-blue w-64 flex-shrink-0">
       <div className="relative h-36 overflow-hidden">
         <Image
-          src={destination.imageUrl}
+          src={imgSrc}
           alt={destination.name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="256px"
+          onError={() => setImgSrc(FALLBACK_IMAGE)}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-surface-900/80 to-transparent" />
         {destination.rating && (

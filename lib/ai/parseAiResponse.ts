@@ -1,7 +1,5 @@
 import { ConversationState, ConversationPreferences, Destination } from '@/types';
-
-const FALLBACK_IMAGE =
-  'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80';
+import { resolveImageUrl } from './imageResolver';
 
 export interface ParsedAiResult {
   type: string;
@@ -79,7 +77,7 @@ function enrichConfirmedDestination(
     estimatedPrice: 0,
     currency: 'USD',
     tags: [],
-    imageUrl: FALLBACK_IMAGE,
+    imageUrl: resolveImageUrl({ name: aiConfirmed.name, iata: aiConfirmed.iata }),
     description: '',
   };
 }
