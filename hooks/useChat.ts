@@ -55,10 +55,18 @@ export function useChat() {
       setLoading(true);
 
       try {
+        // Send the last 10 real messages as history so the LLM has conversation memory
+        // (mirrors N8N Simple Memory buffer window from v3 workflow)
+        const recentHistory = messages
+          .filter((m) => !m.isLoading && m.content)
+          .slice(-10)
+          .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+
         const response = await sendMessage({
           message: content,
           sessionId,
           conversationState,
+          messageHistory: recentHistory,
         });
 
         updateMessage(loadingId, {
