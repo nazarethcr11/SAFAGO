@@ -34,6 +34,8 @@ export interface ConversationState {
   confirmedDestination: Destination | null;
   departureDate: string | null;   // YYYY-MM-DD
   returnDate: string | null;      // YYYY-MM-DD
+  tripType?: number;              // 1 = ida y vuelta | 2 = solo ida (SerpAPI)
+  destinationIata?: string;       // IATA del aeropuerto del destino confirmado
   turnCount: number;
 }
 
@@ -116,10 +118,16 @@ export interface Message {
   loadingVariant?: 'thinking' | 'searching_flights';
 }
 
+export interface MessageHistoryItem {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export interface ChatRequest {
   message: string;
   sessionId: string;
   conversationState: ConversationState;
+  messageHistory?: MessageHistoryItem[];  // últimos N mensajes para memoria conversacional
 }
 
 export interface ChatResponse {

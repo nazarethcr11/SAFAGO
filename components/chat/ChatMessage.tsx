@@ -77,8 +77,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
         {/* Flight Cards */}
         {message.flights && message.flights.length > 0 && (
           <div className="flex gap-3 overflow-x-auto pb-2 max-w-full">
-            {message.flights.map((flight) => (
-              <FlightCard key={flight.flightNumber + flight.departureTime} flight={flight} />
+            {message.flights.map((flight, idx) => (
+              <FlightCard key={`${flight.route}-${flight.price}-${idx}`} flight={flight} />
             ))}
           </div>
         )}
