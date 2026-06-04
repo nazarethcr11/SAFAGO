@@ -29,7 +29,7 @@ const COUNTRY_REGION: Record<string, string> = {
   chile: 'south_america', brasil: 'south_america', brazil: 'south_america',
   ecuador: 'south_america',
 
-  mexico: 'caribbean', 'rep. dominicana': 'caribbean', cuba: 'caribbean', jamaica: 'caribbean',
+  mexico: 'caribbean', méxico: 'caribbean', 'rep. dominicana': 'caribbean', cuba: 'caribbean', jamaica: 'caribbean',
 
   'costa rica': 'central_america', panama: 'central_america', guatemala: 'central_america',
 
@@ -45,7 +45,7 @@ const COUNTRY_REGION: Record<string, string> = {
 // City/destination name → region overrides
 const NAME_PATTERNS: Array<[RegExp, string]> = [
   [/dubai|abu dhabi|doha|riyadh|qatar/i, 'asia'],
-  [/cancun|tulum|playa del carmen|riviera maya/i, 'caribbean'],
+  [/canc[uú]n|tulum|playa del carmen|riviera maya/i, 'caribbean'],
   [/paris|madrid|roma|barcelona|santorini|lisboa|amsterdam|praga|viena|zurich|berlin|oslo/i, 'europe'],
   [/bali|tokio|tokyo|bangkok|singapur|singapore|maldivas|filipinas|camboya|dubai/i, 'asia'],
   [/cusco|machu picchu|buenos aires|rio de janeiro|medellin|bogota/i, 'south_america'],
